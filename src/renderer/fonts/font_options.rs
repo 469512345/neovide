@@ -9,12 +9,14 @@ use skia_safe::{
 };
 
 use crate::{editor, error_msg};
+use crate::settings::MissingFontBehavior;
 
 const DEFAULT_FONT_SIZE: f32 = 14.0;
 const FONT_OPTS_SEPARATOR: char = ':';
 const FONT_LIST_SEPARATOR: char = ',';
 const FONT_HINTING_PREFIX: &str = "#h-";
 const FONT_EDGING_PREFIX: &str = "#e-";
+const FONT_MISSING_MODE_PREFIX: &str = "#m-";
 const FONT_HEIGHT_PREFIX: char = 'h';
 const FONT_WIDTH_PREFIX: char = 'w';
 const FONT_BOLD_OPT: &str = "b";
@@ -109,6 +111,7 @@ pub struct FontOptions {
     pub width: f32,
     pub hinting: FontHinting,
     pub edging: FontEdging,
+    pub missing_mode: MissingFontBehavior,
 }
 
 impl FontFeature {
@@ -164,6 +167,8 @@ impl FontOptions {
                 font_options.hinting = FontHinting::parse(hinting_string)?;
             } else if let Some(edging_string) = part.strip_prefix(FONT_EDGING_PREFIX) {
                 font_options.edging = FontEdging::parse(edging_string)?;
+            } else if let Some(missing_mode) = part.strip_prefix(FONT_MISSING_MODE_PREFIX) {
+                font_options.missing_mode = MissingFontBehavior::parse(missing_mode)?;
             } else if part.starts_with(FONT_HEIGHT_PREFIX) && part.len() > 1 {
                 font_options.size = parse_pixels(part).map_err(|_| INVALID_SIZE_ERR)?;
             } else if part.starts_with(FONT_WIDTH_PREFIX) && part.len() > 1 {
@@ -260,6 +265,7 @@ impl Default for FontOptions {
             width: 0.0,
             hinting: FontHinting::default(),
             edging: FontEdging::default(),
+            missing_mode: MissingFontBehavior::default(),
         }
     }
 }

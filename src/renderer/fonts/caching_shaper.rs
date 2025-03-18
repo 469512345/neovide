@@ -20,6 +20,7 @@ use crate::{
     renderer::fonts::{font_loader::*, font_options::*},
     units::PixelSize,
 };
+use crate::settings::MissingFontBehavior;
 
 #[derive(new, Clone, Hash, PartialEq, Eq, Debug)]
 struct ShapeKey {
@@ -114,7 +115,7 @@ impl CachingShaper {
             .filter(|key| self.font_loader.get_or_load(key).is_none())
             .collect_vec();
 
-        if !failed_fonts.is_empty() {
+        if !failed_fonts.is_empty() && options.missing_mode == MissingFontBehavior::Warn {
             error_msg!(
                 "Font can't be updated to: {:#?}\n\
                 Following fonts couldn't be loaded: {}",

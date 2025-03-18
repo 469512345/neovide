@@ -36,6 +36,30 @@ pub enum SecondaryFontDescriptionSettings {
 }
 
 #[derive(Debug, Clone, Deserialize, PartialEq)]
+#[serde(untagged)]
+pub enum MissingFontBehavior {
+    Warn,
+    Ignore
+}
+
+impl Default for MissingFontBehavior {
+    fn default() -> Self {
+        MissingFontBehavior::Warn
+    }
+}
+
+impl MissingFontBehavior {
+    const INVALID_ERR : &str = "Invalid missing font mode";
+    pub fn parse(value: &str) -> Result<Self, &str> {
+        match value {
+            "w" | "warn" => Ok(MissingFontBehavior::Warn),
+            "i" | "ignore" => Ok(MissingFontBehavior::Ignore),
+            _ => Err(Self::INVALID_ERR),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Deserialize, PartialEq)]
 pub struct FontSettings {
     /// Font family to use for the normal font.
     pub normal: FontDescriptionSettings,
@@ -48,6 +72,7 @@ pub struct FontSettings {
     pub allow_float_size: Option<bool>,
     pub hinting: Option<String>,
     pub edging: Option<String>,
+    pub missing_mode: Option<MissingFontBehavior>
 }
 
 impl From<FontDescriptionSettings> for Vec<FontDescription> {
@@ -129,6 +154,7 @@ impl From<FontSettings> for FontOptions {
                 .edging
                 .map(|edging| FontEdging::parse(&edging).unwrap_or_default())
                 .unwrap_or_default(),
+            missing_mode: value.missing_mode.unwrap_or_default()
         }
     }
 }
